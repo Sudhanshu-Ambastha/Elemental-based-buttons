@@ -2,6 +2,8 @@
 
 A stylish and interactive galaxy-themed button created with HTML and CSS.
 
+## Preview
+
 ![Galaxy Button Preview](https://github.com/Sudhanshu-Ambastha/Galaxy-background-/assets/135802131/cebfd32d-020e-4ce6-9deb-47b927cf30f1)
 
 ## Overview
