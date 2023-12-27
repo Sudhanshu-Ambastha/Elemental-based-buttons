@@ -1,0 +1,2 @@
+# Galaxy background 
+ wallpaper 
