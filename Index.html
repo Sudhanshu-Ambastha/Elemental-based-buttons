@@ -38,16 +38,10 @@
                     vec2 uv = gl_FragCoord.xy / u_resolution.xy;
                     vec3 color = vec3(1.0, 0.3, 0.1);
 
-                    // Fire border
-                    float borderFire = smoothstep(0.2, 1.0, distance(uv, vec2(0.5, 0.5)));
+                    // Fire effect
+                    float fire = smoothstep(0.5, 1.0, sin(uv.y * 10.0 + u_time) * 0.2 + 0.8);
 
-                    // Volcano in the center
-                    float volcano = smoothstep(0.2, 0.5, distance(uv, vec2(0.5, 0.5)));
-
-                    // Combine fire and volcano
-                    vec3 finalColor = mix(color * borderFire, vec3(1.0, 0.8, 0.2) * volcano, 0.5);
-
-                    gl_FragColor = vec4(finalColor, 1.0);
+                    gl_FragColor = vec4(color * fire, 1.0);
                 }
             `,
         };
@@ -101,3 +95,4 @@
 <body></body>
 
 </html>
+
