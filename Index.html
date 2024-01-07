@@ -1,54 +1,188 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        html, body {
-            height: 100%;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: black;
-        }
+<html>
+            <head>
+                <meta name="viewport" content="width=device-width, initial-scale=1">
+                <style>
+                    html, body, iframe, canvas{
+                        margin: 0;
+                        padding: 0;
+                        width: 100%;
+                        height: 100%;
+                        border: 0;
+                    }
+                </style>
+                <script type="module">
+                    import React, {useRef} from 'https://cdn.skypack.dev/react@18.0.2';
+                    import ReactDOM from 'https://cdn.skypack.dev/react-dom@18.0.2';
+                    import {Canvas, useFrame} from 'https://cdn.skypack.dev/@react-three/fiber@7.0.24';
 
-        .fire-container {
-            position: relative;
-            width: 300px;
-            height: 300px;
-            overflow: hidden;
-        }
+                    const TextureMesh = () => {
+                        const mesh = useRef(null)
+                        useFrame(state => {
+                            const { clock, mouse, gl, scene, camera } = state
+                            if(mesh.current){
+                                mesh.current.material.uniforms.u_mouse.value = [mouse.x, mouse.y]
+                                mesh.current.material.uniforms.u_time.value = clock.getElapsedTime()
+                            }
+                        })
+                        
+                        return React.createElement('mesh',
+                            {
+                                ref:mesh,
+                                position: [0,0,0],
+                                scale: 1,
+                                rotation: [0,0,0]
+                            },
+                            React.createElement('planeGeometry',{args:[1024,1024]}), 
+                            React.createElement('shaderMaterial',{
+                                fragmentShader: `
+// UNIFORMS
+#define NUM_LAYERS 10.
 
-        .fire {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle, #ff8f00, #ff4f00, #ff0000);
-            animation: flame 2s infinite alternate-reverse;
-        }
+uniform vec2 u_resolution;
+uniform vec2 u_mouse;
+uniform float u_time;
 
-        @keyframes flame {
-            0% {
-                opacity: 0.8;
-                transform: scaleY(1);
-            }
-            50% {
-                opacity: 1;
-                transform: scaleY(1.5);
-            }
-            100% {
-                opacity: 0.8;
-                transform: scaleY(1);
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="fire-container">
-        <div class="fire"></div>
-    </div>
+
+uniform float u_scale;
+
+
+mat2 roat(float a){
+  
+  float s = sin(a);
+  float c = cos(a);
+  return mat2(c, -s, s, c);
+}
+
+float Star(vec2 uv, float flare){
+  
+  float d = length(uv);
+  float m = .05/d;
+  
+  
+  float rays = max(0., 1. - abs(uv.x * uv.y * 1000.));
+  m += rays*flare;
+  
+  uv *= roat(3.145/4.);
+  
+  rays = max(0., 1. - abs(uv.x * uv.y * 1000.));
+  m += rays *.3*flare;
+  
+  m *= smoothstep(1., .2, d);
+  return m;
+}
+    
+float Hash21(vec2 p){
+  p = fract(p* vec2(123.34, 456.21));
+  p += dot(p, p+45.32);
+  
+  return fract(p.x*p.y);
+}
+
+vec3 StarLayer(vec2 uv){
+  vec3 col = vec3(0);
+  
+  vec2 gv = fract(uv)-.5;
+  
+  
+  // col.rg = gv;
+  
+  vec2 id = floor(uv);
+  
+  for(int y=-1; y<=1; y++){
+    for(int x=-1; x<=1; x++){
+      vec2 offs = vec2(x,y);
+      
+      float n = Hash21(id+offs);
+      // col += Star(gv-offs-vec2(n, fract(n*34.))+.5, 1.);
+      float size = fract(n * 1345.32);
+      float star = Star(gv-offs-vec2(n, fract(n*34.))+.5, smoothstep(.9, 1., size)*.6);
+      
+      // vec3 color = sin(vec3(.2,.3,.9)*u_time);
+      vec3 color = sin(vec3(.2,.3,.9)*fract(n*2345.2)*12.283)*.5+.5;
+      
+      color = color*vec3(1.,.5,1.+size);
+      star *= sin(u_time*3.+n*6.323)*.5+1.;
+      col += star*size*color;
+    }  
+  }
+  return col;
+}
+void main() {
+  vec2 uv = (gl_FragCoord.xy - .5 * u_resolution.xy)/u_resolution.y;
+  
+  vec2 M = (u_mouse.xy - u_resolution.xy*.5)/u_resolution.y;
+  // uv*=10.*u_scale;
+  
+  uv*=(3.*u_scale)-.5;
+  
+  float t = u_time*.05; 
+  // uv +=M*4.;
+  uv *= roat(t);
+
+  vec3 col = vec3(0);
+  
+  for(float i=0.; i<1.; i+=1./NUM_LAYERS){
+    
+    float depth = fract(i+t);
+    float scale = mix(20., .5, depth);
+    float fade = depth*smoothstep(1., .9, depth);
+    col+= StarLayer(uv*scale+i*455.2) *fade;
+  }
+  
+  
+  gl_FragColor = vec4(col,1.0);
+}`,
+                                vertexShader: `
+            void main() {
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }`,
+                                uniforms: {"u_scale":{"value":0.306},"u_time":{"value":0},"u_mouse":{"value":[0,0]},"u_resolution":{"value":[1024,1024]}},
+                                wireframe: false, 
+                                wireframeLinewidth: 0,
+                                dithering: false,
+                                flatShading: true,
+                                doubleSided: true,
+                                glslVersion: "100"
+                            })
+                        );  
+                    }
+
+                    ReactDOM.render(React.createElement(Canvas,{
+                            gl: {
+                                preserveDrawingBuffer: true,
+                                premultipliedAlpha: false,
+                                alpha: true,
+                                transparent: true,
+                                antialias: true,
+                                precision: "highp",
+                                powerPreference: "high-performance"
+                            },
+                            dpr: [2,2],
+                            camera: {
+                                fov: 75,
+                                near: 0.1,
+                                far: 1000,
+                                position: [0,0,5]
+                            },
+                            style:{ height: 512, width: 512 }
+                        },
+                        React.createElement(TextureMesh)                           
+                    ), document.body);
+                </script>
+            </head>
+            <body>
+<!-- ASSET NOT INLINED: assets/lygia.f7490594.svg -->
+
+<!-- ASSET NOT INLINED: assets/add.a55240dd.svg -->
+
+<!-- ASSET NOT INLINED: assets/book.5fb11b8d.svg -->
+
+<!-- ASSET NOT INLINED: assets/code.428b18f5.svg -->
+
+<!-- ASSET NOT INLINED: assets/overflow.8d50415d.svg -->
+
+<!-- ASSET NOT INLINED: assets/close.64b80d00.svg -->
+
+<!-- ASSET NOT INLINED: assets/trash.524dbcd3.svg -->
 </body>
-</html>
-
-
+        </html>
