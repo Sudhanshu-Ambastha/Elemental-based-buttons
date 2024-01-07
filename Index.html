@@ -3,47 +3,83 @@
 
 <head>
     <style>
+        html,
+        body {
+            height: 100%;
+            width: 100%;
+            background: black;
+            font-size: 24px;
+            font-family: system-ui, sans-serif;
+        }
+
         body {
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 100vh;
             margin: 0;
-            background-color: #f0f0f0;
+            padding: 0;
         }
 
         button {
-            padding: 1rem 2rem;
-            font-size: 1.2rem;
-            background-color: #3498db;
-            color: #ffffff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            appearance: none;
+            border: 0;
+            background: 0;
             position: relative;
+            color: white;
+            border-radius: 0.5rem;
             overflow: hidden;
+            font-weight: 500;
         }
 
-        button:hover::before {
+        button:after {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.2);
-            transform: scale(1.2);
-            transition: transform 0.3s ease-in-out;
+            inset: 0;
+            box-shadow: inset 0 0 0 2px #ffffff;
+            border-radius: inherit;
+            mix-blend-mode: overlay;
         }
 
-        button:hover {
-            background-color: #2980b9;
+        button iframe {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%) scale(1) rotate(15deg);
+            opacity: 0.5;
+            filter: blur(5px);
+            transition: all 0.5s ease-in-out;
+        }
+
+        button span {
+            position: relative;
+            z-index: 1;
+            opacity: 0.75;
+            color: white;
+            transition: all 0.5s ease-in-out;
+        }
+
+        button:hover iframe {
+            transform: translate(-50%, -50%) scale(0.5);
+            opacity: 1;
+            filter: blur(0);
+        }
+
+        button:hover span {
+            opacity: 1;
         }
     </style>
 </head>
 
 <body>
-    <button>Hover me!</button>
+    <button>
+        <span>Fire button!</span>
+        <iframe
+            src="https://www.openai.com/content/images/2023/04/fire-animation.html"
+            style="border:0;margin:0;width: 512px;height:512px;" />
+    </button>
 </body>
 
 </html>
+
