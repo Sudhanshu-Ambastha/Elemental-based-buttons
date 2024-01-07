@@ -20,49 +20,18 @@
         import ReactDOM from 'https://cdn.skypack.dev/react-dom@18.0.2';
         import { Canvas, useFrame } from 'https://cdn.skypack.dev/@react-three/fiber@7.0.24';
 
-        const FireShader = {
-            uniforms: {
-                u_time: { value: 0 },
-                u_resolution: { value: new THREE.Vector2(1024, 1024) },
-            },
-            vertexShader: `
-                void main() {
-                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-                }
-            `,
-            fragmentShader: `
-                uniform float u_time;
-                uniform vec2 u_resolution;
-
-                void main() {
-                    vec2 uv = gl_FragCoord.xy / u_resolution.xy;
-                    vec3 color = vec3(1.0, 0.3, 0.1);
-
-                    // Fire effect
-                    float fire = smoothstep(0.5, 1.0, sin(uv.y * 10.0 + u_time) * 0.2 + 0.8);
-
-                    gl_FragColor = vec4(color * fire, 1.0);
-                }
-            `,
-        };
-
-        const FireEffect = () => {
+        const Cube = () => {
             const mesh = useRef();
 
-            useFrame(({ clock }) => {
-                const elapsedTime = clock.getElapsedTime();
-                mesh.current.material.uniforms.u_time.value = elapsedTime;
+            useFrame(() => {
+                mesh.current.rotation.x += 0.01;
+                mesh.current.rotation.y += 0.01;
             });
 
             return (
-                <mesh>
-                    <planeGeometry args={[1024, 1024]} />
-                    <shaderMaterial
-                        uniforms={FireShader.uniforms}
-                        vertexShader={FireShader.vertexShader}
-                        fragmentShader={FireShader.fragmentShader}
-                        transparent
-                    />
+                <mesh ref={mesh}>
+                    <boxGeometry args={[1, 1, 1]} />
+                    <meshBasicMaterial color="red" />
                 </mesh>
             );
         };
@@ -83,7 +52,7 @@
                     camera={{ fov: 75, near: 0.1, far: 1000, position: [0, 0, 5] }}
                     style={{ height: 512, width: 512 }}
                 >
-                    <FireEffect />
+                    <Cube />
                 </Canvas>
             );
         };
@@ -95,4 +64,3 @@
 <body></body>
 
 </html>
-
