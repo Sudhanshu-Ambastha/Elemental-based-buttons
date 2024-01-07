@@ -18,6 +18,10 @@ To use the galaxy button in your project, follow these steps:
 2. Paste the code into your HTML file.
 3. Customize the button text and styles as needed.
 
+## Decoded Space Effect
+
+For an additional space-themed visual experience, there is also a file named 'decoded-space-effect.html.' You can check it out to explore a unique and captivating space animation created with HTML and CSS.
+
 ## Credits
 
 This project was created by Sudhanshu Ambastha.
